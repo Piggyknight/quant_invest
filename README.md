@@ -17,6 +17,14 @@
 2. Each tactics will have certain variable to config (probably in ini format)
 3. Support different Currrency couple data, and different time data(in hour, day, minuate format)
 
+## class design
+currency_api.py:  was the main entry of the main cmd line
+
+
+
+
+
 ## Data flow chart
+
 
 

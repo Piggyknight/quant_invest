@@ -1,24 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from enum import Enum
-
-class E_OpType(Enum):
-    buy = 0
-    sell = 1
-    close_out = 2
-
-class IdGenerator:
-    def __init__(self):
-        self._cur_id = 0
-        return
-
-    def GetId(self):
-        self._cur_id += 1
-        return self._cur_id
-
 class OpSell:
     def __init__(self, id_gen):
         self._id_gen = id_gen
+        self.account = None
         return
 
     def Do(self, data, orders):
@@ -32,6 +17,7 @@ class OpSell:
 class OpBuy:
     def __init__(self, id_gen):
         self._id_gen = id_gen
+        self.account = None
         return
 
     def Do(self, data, orders):
@@ -45,6 +31,7 @@ class OpBuy:
 
 class OpCloseOut:
     def __init__(self, id_gen):
+        self.account = None
         return
 
     def Do(self, data, orders):

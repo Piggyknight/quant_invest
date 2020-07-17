@@ -54,7 +54,7 @@ class AiTrading:
         # 3. convert time conf to idx in the row
 
 
-        # 3. check if hit the bottom
+        # 4. check if hit the bottom
         bottom = SearchBottom(self._last_data, )
 
 
