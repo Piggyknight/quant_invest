@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\conf"
   ],
-  "SelectedNode": "\\currency_op_param.py",
+  "SelectedNode": "\\currency_db.py",
   "PreviewInSolutionExplorer": false
 }
