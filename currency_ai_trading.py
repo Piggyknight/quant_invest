@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 
 from typing import List
-from currency_db import *
 from currency_db_search import *
 from currency_conf import *
+from currency_op_param import *
+import copy
 
 
 class AiTrading:
@@ -31,40 +32,118 @@ class AiTrading:
     def __init__(self, currency_conf: CurrencyConf) -> None:
         self.last_data = List[CurrencyRow]
         self.data_num = 0
+        self.has_bought = False
+        self.history_list = []
         self.buy_time = None
-        self.buy_amount = 1
-        self.last_bottom = 0
-        self.last_top = 0
         self.conf = currency_conf
 
-    def Process(self, data: CurrencyRow) -> bool:
+    def Process(self, data: CurrencyRow) -> List[OpParam]:
         # 1. safe check
         if not isinstance(data, CurrencyRow):
-            return False
+            return empty_op
 
-        # 2. check if data is enough
+        # 2. add to the data
+        self.last_data.append(data)
+
+        # 3. check if data is enough
         cur_num = len(self.last_data)
-        if cur_num < self.data_num:
-            return False
+        min_data_num = max(self.conf.top_search_range, self.conf.bottom_search_range)
+        if cur_num < min_data_num:
+            return empty_op
 
-        # 3. check if hit the bottom
+        # 4. first check if hit the stop loss or stop profit
+
+        
+        # 5. if not hit, then check if the time is reached buy time
+
+
+
+        # 4. check if hit the bottom
         bottom = SearchBottom(self.last_data, cur_num, self.conf.bottom_search_range)
         below_idx = SearchBelow(self.last_data, cur_num, self.conf.bottom_duration, bottom)
         is_hit_bottom = False
         if below_idx > -1:
             is_hit_bottom = True
 
-        # 4. check if hit the top
+        # 5. check if hit the top
         top = SearchTop(self.last_data, cur_num, self.conf.top_search_range)
         above_idx = SearchAbove(self.last_data, cur_num, self.conf.top_duration, top)
         is_hit_top = False
         if above_idx > -1:
             is_hit_top = True
 
-        # 5. compare to check whether we hit bottom first or hit top first
+        # 6. according to the result, decide what we need to do
+        #  6.1 if both hit top & bottom, then we need decide which one is earlier
+        actions_idxs = []
+        if is_hit_top and is_hit_bottom :
+            if below_idx < above_idx:
+                actions_idxs.append(1)
+            else:
+                actions_idxs.append(2)
+        elif is_hit_top:
+            actions_idxs.append(2)
+        elif is_hit_bottom:
+            actions_idxs.append(1)
+        else:
+            # 6.2 if everything is ok, then we check the time if it reached the buy time
+            # 6.2.1 init the buy time
+            if self.buy_time is None:
+                self.buy_time = copy.deepcopy(data.time)
+                self.buy_time.hour = self.conf.buy_time
 
-        # 6. generate command list
+            self.buy_time.year = data.time.year
+            self.buy_time.month = data.time.month
 
-        # 6. generate stop profit & stop loss triggers
+            # 6.2.2 calculate the timedelta
+            time_delta = self.buy_time - data.time
+            print("current time: %s, conf time: %s, delta_time: %s (min)" % (data.time, self.buy_time, time_delta.min))
 
-        return True
+            # 6.2.3 if time is reached, we
+            if time_delta.min < 0:
+
+
+
+
+            data.time.clone
+            action_idx = 3
+
+        # 7. use tuple as switch case, according to the action_idx to generate OpParam
+        actions = {
+            0: "_gen_nothing_op_param",
+            1: "_gen_sell",
+            2: "_gen_buy",
+            3: "_gen_buy",
+            4: "_gen_closeout",
+        }
+
+        method = getattr(self, actions[action_idx])
+        if method is None:
+            print("[trading]Can't get method %s" % actions[action_idx])
+        op_param = method(data)
+
+        # 8. add op_param into history for debug usage
+        self.history_list.append(op_param)
+
+        return op_param
+
+
+    def _gen_nothing_op_param(self, row_data: CurrencyRow) -> OpParam:
+        return empty_op
+
+    def _gen_sell(self,  row_data: CurrencyRow) -> OpParam:
+        return self._gen_op(E_OP_TYPE.sell, row_data)
+
+    def _gen_buy(self, row_data: CurrencyRow) -> OpParam:
+        return self._gen_op(E_OP_TYPE.buy, row_data)
+
+    def _gen_closeout(self, row_data: CurrencyRow) -> OpParam:
+        return self._gen_op(E_OP_TYPE.close_out, row_data)
+
+    def _gen_op(self, op_type: E_OP_TYPE, row_data: CurrencyRow) -> OpParam:
+        ret_param = OpParam()
+        ret_param.op_type = op_type
+        ret_param.price = row_data.close
+        ret_param.amount = self.conf.trade_amount
+        return ret_param
+
+

@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+
 class OpSell:
     def __init__(self, id_gen):
         self._id_gen = id_gen
@@ -13,6 +14,7 @@ class OpSell:
 
         #3. put into orders
         return
+
 
 class OpBuy:
     def __init__(self, id_gen):

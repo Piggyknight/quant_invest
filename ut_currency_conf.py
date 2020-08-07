@@ -19,11 +19,11 @@ stop_profit = 100
 wait_duration = 24
 time_unit = 2
 '''
-assert 12 == conf._buy_time, "buy time load error"
-assert 24 == conf._bottom_duration, "bottom duration error"
-assert 48 == conf._bottom_search_range, "bottom search range error"
-assert 24 == conf._top_duration, "top duration error"
-assert 48 == conf._top_search_range, "top search range error"
-assert 100 == conf._stop_loss, "stop loss error"
-assert 24 == conf._wait_duration, "wait duration error"
-assert E_TimeUnit.hour == conf._time_unit, "time unit error"
+assert 12 == conf.buy_time, "buy time load error"
+assert 24 == conf.bottom_duration, "bottom duration error"
+assert 48 == conf.bottom_search_range, "bottom search range error"
+assert 24 == conf.top_duration, "top duration error"
+assert 48 == conf.top_search_range, "top search range error"
+assert 100 == conf.stop_loss, "stop loss error"
+assert 24 == conf.wait_duration, "wait duration error"
+assert E_TIME_UNIT.hour == conf.time_unit, "time unit error"
