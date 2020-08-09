@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from enum import Enum
+from currency_exchange_rate import *
 
 
 class E_OP_TYPE(Enum):
@@ -15,7 +16,7 @@ class E_OP_TYPE(Enum):
     __repr__ = __str__
 
 
-_print_format = 'OpType:%s, price:%d, number:%d'
+_print_format = 'OpType:%s, price:%d, number:%d, money_type: %d'
 
 
 class OpParam:
@@ -23,11 +24,15 @@ class OpParam:
         self.op_type = E_OP_TYPE.none
         self.price = 0
         self.amount = 0
+        self.src_money = E_MONEY_TYPE.usd
+        self.target_money = E_MONEY_TYPE.eur
 
     def __str__(self):
         return _print_format % (self.op_type,
                                 self.price,
-                                self.amount)
+                                self.amount,
+                                self.src_money,
+                                self.target_money)
 
     __repr__ = __str__
 

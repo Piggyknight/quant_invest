@@ -37,7 +37,7 @@ class CurrencyDb:
     """
 
     def __init__(self):
-        self.db = List[CurrencyRow]
+        self.db = []
 
     def Load(self, db_file: str) -> int:
         # 1. check if file is exist
@@ -50,7 +50,7 @@ class CurrencyDb:
         with open(db_file, 'r', encoding='utf-8-sig') as csv_file:
             reader = csv.reader(csv_file)
 
-            print("[market]Start analyze csv file...")
+            print("[market]Start analyze csv file: %s ....", csv_file)
             begin_size = len(self.db)
             for row in reader:
                 if 0 == len(row):
