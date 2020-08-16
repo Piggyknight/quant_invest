@@ -55,6 +55,9 @@ class OpCloseOutSell:
         # 3. update corresponding src money
         self.account.AddMoney(op_param.src_money, profit)
 
+        # 4. push order into account history
+        self.account.PushHistory(op_param)
+
 
 class OpBuy:
     def __init__(self, account: CurrencyAccount,trading_info: TradingInfo):
@@ -71,6 +74,7 @@ class OpBuy:
 
         # 3. push order into stack
         self.account.PushOrder(op_param)
+        return
 
 
 class OpCloseOutBuy:
@@ -101,3 +105,6 @@ class OpCloseOutBuy:
 
         # 3. update corresponding src money
         self.account.AddMoney(op_param.src_money, profit)
+
+        # 4. push order into account history
+        self.account.PushHistory(op_param)

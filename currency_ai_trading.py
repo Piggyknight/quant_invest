@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
-
 from typing import List
 from currency_db_search import *
 from currency_conf import *
 from currency_op_param import *
-import copy
+from currency_account import *
+from currency_condition import *
+
 
 
 class AiTrading:
@@ -29,13 +30,20 @@ class AiTrading:
     		- 每次交易平均点差
 
     """
-    def __init__(self, currency_conf: CurrencyConf) -> None:
+    def __init__(self, currency_conf: CurrencyConf, account: CurrencyAccount) -> None:
+        # 1. init basic info
         self.last_data = List[CurrencyRow]
         self.data_num = 0
         self.has_bought = False
         self.history_list = []
         self.buy_time = None
         self.conf = currency_conf
+        self.account = account
+
+        # 2. init condition trigger
+        self.cond_stop_loss = CondStopLoss(currency_conf.stop_loss)
+        self.cond_stop_profit = CondStopProfit(currency_conf.stop_profit)
+        self.cond_trading_time = CondTradingTime(currency_conf.buy_time)
 
     def Process(self, data: CurrencyRow) -> List[OpParam]:
         # 1. safe check
@@ -51,93 +59,68 @@ class AiTrading:
         if cur_num < min_data_num:
             return empty_op
 
-        # 4. first check if hit the stop loss or stop profit
+        # 4. check if has orders
+        decision = []
+        is_trading_time = self.cond_trading_time.IsTrigger(data)
+        if self.account.HasOrders:
+            last_op = self.account.PeekOrder()
+            is_last_sell_order = E_OP_TYPE.sell == last_op.op_type
+            is_last_buy_order = E_OP_TYPE.buy == last_op.op_type
+            is_hit_stop_loss = self.cond_stop_loss.IsTrigger(data)
+            is_hit_stop_profit = self.cond_stop_profit.IsTrigger(data)
+            print("is_last_sell_order: %d, is_last_buy_order: %d" \
+                  % (is_last_sell_order, is_last_buy_order))
+            print(" is_hit_loss: %d, is_hit_profit, %d, is_trading_time: %d"\
+                  % (is_hit_stop_loss, is_hit_stop_profit, is_trading_time))
 
-        
-        # 5. if not hit, then check if the time is reached buy time
+            # 4.1 make decision by all the param
+            if is_last_sell_order and is_hit_stop_loss:
+                decision.append(E_OP_TYPE.closeout_sell)
+            elif is_last_buy_order and self.cond_stop_profit.IsTrigger(data):
+                decision.append(E_OP_TYPE.closeout_buy)
+            elif is_last_buy_order and is_trading_time:
+                decision.append(E_OP_TYPE.closeout_buy)
+            elif is_last_sell_order and is_trading_time:
+                decision.append(E_OP_TYPE.closeout_sell)
 
+        # 5 if trading time is reached, we need to decide buy or sell
+        if is_trading_time:
+            # 5.1. check if hit the bottom
+            bottom = SearchBottom(self.last_data, cur_num, self.conf.bottom_search_range)
+            below_idx = SearchBelow(self.last_data, cur_num, self.conf.bottom_duration, bottom)
+            is_hit_bottom = False
+            if below_idx > -1:
+                is_hit_bottom = True
 
+            # 5.2 check if hit the top
+            top = SearchTop(self.last_data, cur_num, self.conf.top_search_range)
+            above_idx = SearchAbove(self.last_data, cur_num, self.conf.top_duration, top)
+            is_hit_top = False
+            if above_idx > -1:
+                is_hit_top = True
 
-        # 4. check if hit the bottom
-        bottom = SearchBottom(self.last_data, cur_num, self.conf.bottom_search_range)
-        below_idx = SearchBelow(self.last_data, cur_num, self.conf.bottom_duration, bottom)
-        is_hit_bottom = False
-        if below_idx > -1:
-            is_hit_bottom = True
+            # 5.3 according to the result, decide what we need to do
+            # 5.3.1 if both hit top & bottom, then we need decide which one is earlier
+            if is_hit_top and is_hit_bottom :
+                if below_idx < above_idx:
+                    decision.append(E_OP_TYPE.sell)
+                else:
+                    decision.append(E_OP_TYPE.buy)
+            elif is_hit_top:
+                decision.append(E_OP_TYPE.buy)
+            elif is_hit_bottom:
+                decision.append(E_OP_TYPE.sell)
 
-        # 5. check if hit the top
-        top = SearchTop(self.last_data, cur_num, self.conf.top_search_range)
-        above_idx = SearchAbove(self.last_data, cur_num, self.conf.top_duration, top)
-        is_hit_top = False
-        if above_idx > -1:
-            is_hit_top = True
-
-        # 6. according to the result, decide what we need to do
-        #  6.1 if both hit top & bottom, then we need decide which one is earlier
-        actions_idxs = []
-        if is_hit_top and is_hit_bottom :
-            if below_idx < above_idx:
-                actions_idxs.append(1)
-            else:
-                actions_idxs.append(2)
-        elif is_hit_top:
-            actions_idxs.append(2)
-        elif is_hit_bottom:
-            actions_idxs.append(1)
-        else:
-            # 6.2 if everything is ok, then we check the time if it reached the buy time
-            # 6.2.1 init the buy time
-            if self.buy_time is None:
-                self.buy_time = copy.deepcopy(data.time)
-                self.buy_time.hour = self.conf.buy_time
-
-            self.buy_time.year = data.time.year
-            self.buy_time.month = data.time.month
-
-            # 6.2.2 calculate the timedelta
-            time_delta = self.buy_time - data.time
-            print("current time: %s, conf time: %s, delta_time: %s (min)" % (data.time, self.buy_time, time_delta.min))
-
-            # 6.2.3 if time is reached, we
-            if time_delta.min < 0:
-
-
-
-
-            data.time.clone
-            action_idx = 3
-
-        # 7. use tuple as switch case, according to the action_idx to generate OpParam
-        actions = {
-            0: "_gen_nothing_op_param",
-            1: "_gen_sell",
-            2: "_gen_buy",
-            3: "_gen_buy",
-            4: "_gen_closeout",
-        }
-
-        method = getattr(self, actions[action_idx])
-        if method is None:
-            print("[trading]Can't get method %s" % actions[action_idx])
-        op_param = method(data)
-
-        # 8. add op_param into history for debug usage
-        self.history_list.append(op_param)
+        # 6. according to the decision to create op_param
+        op_param = []
+        for op_type in decision:
+            single_op = self._gen_op(op_type, data)
+            # avoid empty op
+            if single_op is empty_op:
+                continue
+            op_param.append(single_op)
 
         return op_param
-
-
-    def _gen_nothing_op_param(self, row_data: CurrencyRow) -> OpParam:
-        return empty_op
-
-    def _gen_sell(self,  row_data: CurrencyRow) -> OpParam:
-        return self._gen_op(E_OP_TYPE.sell, row_data)
-
-    def _gen_buy(self, row_data: CurrencyRow) -> OpParam:
-        return self._gen_op(E_OP_TYPE.buy, row_data)
-
-    def _gen_closeout(self, row_data: CurrencyRow) -> OpParam:
-        return self._gen_op(E_OP_TYPE.close_out, row_data)
 
     def _gen_op(self, op_type: E_OP_TYPE, row_data: CurrencyRow) -> OpParam:
         ret_param = OpParam()
@@ -145,5 +128,3 @@ class AiTrading:
         ret_param.price = row_data.close
         ret_param.amount = self.conf.trade_amount
         return ret_param
-
-

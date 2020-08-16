@@ -38,10 +38,10 @@ class CurrencyExchangeRate:
 
         # 3. check if key is duplicated
         if key1 in self.rate_db.keys():
-            print("Key1 %d already exist, value: %f src: %s, target: %s" % (key1, self.rate_db[key1], src, target))
+            print("[account]Key1 %d already exist, value: %f src: %s, target: %s" % (key1, self.rate_db[key1], src, target))
 
         if key2 in self.rate_db.keys():
-            print("Key2 %d already exist, value: %f src: %s, target: %s" % (key2, self.rate_db[key2], src, target))
+            print("[account]Key2 %d already exist, value: %f src: %s, target: %s" % (key2, self.rate_db[key2], src, target))
 
         # 4. add key into the rate_db
         self.rate_db[key1] = rate
@@ -61,7 +61,7 @@ class CurrencyExchangeRate:
 
         # 3. check if exist the key from the db
         if key not in self.rate_db.keys():
-            print("Key %d not exist, src: %s, target: %s" % (key, src, target))
+            print("[account]Key %d not exist, src: %s, target: %s" % (key, src, target))
             return 0.0
 
         # 4. output rate if exist

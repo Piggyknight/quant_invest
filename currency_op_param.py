@@ -8,7 +8,8 @@ class E_OP_TYPE(Enum):
     none = 0
     buy = 1
     sell = 2
-    close_out = 3
+    closeout_buy = 3
+    closeout_sell = 4
 
     def __str__(self):
         return '{0}'.format(self.value)

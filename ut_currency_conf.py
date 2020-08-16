@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
-
+import os
 from currency_conf import *
 
-conf_path = 'd:\\project\\git\\python_learning_scripts\\quant\\conf\\currency_conf.ini'
+print("[ut]Start testing CurrencyConf...")
+cur_path = os.path.dirname(__file__)
+conf_path = cur_path + '/conf/currency_conf.ini'
 conf = CurrencyConf()
 conf.Load(conf_path)
 
@@ -19,11 +21,14 @@ stop_profit = 100
 wait_duration = 24
 time_unit = 2
 '''
-assert 12 == conf.buy_time, "buy time load error"
+
+assert 12 == conf.buy_time, "buy time load error: %d" % conf.buy_time
 assert 24 == conf.bottom_duration, "bottom duration error"
 assert 48 == conf.bottom_search_range, "bottom search range error"
 assert 24 == conf.top_duration, "top duration error"
 assert 48 == conf.top_search_range, "top search range error"
 assert 100 == conf.stop_loss, "stop loss error"
 assert 24 == conf.wait_duration, "wait duration error"
-assert E_TIME_UNIT.hour == conf.time_unit, "time unit error"
+assert E_TIME_UNIT.hour.value == conf.time_unit, "time unit error"
+
+print("[ut]Success")

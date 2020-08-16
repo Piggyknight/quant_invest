@@ -17,7 +17,11 @@ class CurrencyAccount:
         self.orders = []
 
     def PushOrder(self, op_param: OpParam):
-        self.orders.push(op_param)
+        self.orders.append(op_param)
+        self.op_history.append(op_param)
+
+    def PushHistory(self, op_param: OpParam):
+        self.op_history.append(op_param)
 
     def PopOrder(self)-> OpParam:
         # 1. avoid empty stack
@@ -26,16 +30,22 @@ class CurrencyAccount:
 
         return self.orders.pop()
 
+    def PeekOrder(self) -> OpParam:
+        return self.orders[-1]
+
+    def HasOrders(self) -> bool:
+        return 0 != len(self.orders)
+
     def AddMoney(self, money_type: E_MONEY_TYPE, val: float):
         if money_type not in self.cur_deposit.keys():
-            print("Money type %d not exist", money_type)
+            print("[account]Money type %d not exist", money_type)
             return
 
         self.cur_deposit[money_type] += val
 
     def GetMoney(self, money_type: E_MONEY_TYPE) -> float:
         if money_type not in self.cur_deposit.keys():
-            print("Money type %d not exist", money_type)
+            print("[account]Money type %d not exist", money_type)
             return 0.0
 
         return self.cur_deposit[money_type]
@@ -45,19 +55,22 @@ class CurrencyAccount:
             - according to the input money type,
             - calculate all the money in the account according to the currency exchange rate
         """
-        print("Cal all the money into type: %s", money_type)
+        print("[account]Cal all the money into type: %s", money_type)
         sum = 0.0
         # 1. loop all the money type
         for key, value in self.cur_deposit.items():
             # 2. get corresponding exchange rate
             exchange_rate = self.exchange_rate.GetExchangeRate(key, money_type)
 
+            if 0.0 == exchange_rate:
+                continue
+
             # 3. sum all the money
             convert = exchange_rate * value
             sum += convert
 
             # 4 print debug info
-            print("Money Type: %d, rate: %f,  cur_reposit: %f, convert=%f , sum=%f"
+            print("[account]Money Type: %d, rate: %f,  cur_reposit: %f, convert=%f , sum=%f"
                   % (key, exchange_rate, value, convert, sum))
 
         return sum
