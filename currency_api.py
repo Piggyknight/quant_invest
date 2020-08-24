@@ -15,6 +15,7 @@ import sys
 def main(argv):
     #1. read excel data into the market
 
+
     #2. init strategy / account
 
     #3. according to the test duration, loop all the data
