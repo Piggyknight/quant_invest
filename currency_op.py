@@ -101,7 +101,7 @@ class OpCloseOutBuy:
         sell_gain = order.amount * op_param.price
         cost = sell_gain * self.trading_info.trading_fee
         profit = sell_gain - buy_cost - cost
-        print("[op]Clostout buy: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
+        print("[op]Closeout buy: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
 
         # 3. update corresponding src money
         self.account.AddMoney(op_param.src_money, profit)

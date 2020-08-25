@@ -7,7 +7,6 @@ from currency_account import *
 from currency_condition import *
 
 
-
 class AiTrading:
     """
     基本策略是:制定时间段内
