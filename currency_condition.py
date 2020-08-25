@@ -53,9 +53,9 @@ class CondTradingTime:
        - Check if time in CurrencyRow is expire,
        - midnight should be 24 not zeor
     """
-    def __init__(self, expire_hour: int):
+    def __init__(self, expire_hour: int, wait_duration: int):
         self.expire_hour = expire_hour
-        self.day = 0
+        self.wait_duration = wait_duration
         self.trading_time = None
 
     def IsTrigger(self, data: CurrencyRow) -> bool:
@@ -67,15 +67,16 @@ class CondTradingTime:
         # 2.1 init the buy time
         if self.trading_time is None:
             self.trading_time = data.time.replace(hour=self.expire_hour)
-        print("[cond]trading time: %s,  expire_hour: %s" % (self.trading_time, self.expire_hour))
+        # print("[cond]trading time: %s,  expire_hour: %s" % (self.trading_time, self.expire_hour))
 
         # 2.2 calculate the timedelta
         dt = self.trading_time - data.time
-        print("[cond]currency row time: %s, delta_time: %s" % (data.time, dt))
+        # print("[cond]cur time: %s, delta_time: %s" % (data.time, dt))
 
         # 3. check if data time is expire, then update the day
         if dt <= timedelta(seconds=0):
-            self.trading_time = data.time.replace(hour=self.expire_hour)
+            self.trading_time += timedelta(hours=self.wait_duration)
+            print("[cond]Time reached, update trading_time: %s" % self.trading_time)
             return True
 
         return False

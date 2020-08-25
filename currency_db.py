@@ -68,18 +68,15 @@ class CurrencyDb:
 
         return 0
 
-    def LoadByString(self, data: str) -> int:
-        # 1. split data by '\n'
-        lines = data.split('\n')
-
-        # 2. record begin db size
+    def LoadByString(self, data: List[str]) -> int:
+        # 1. record begin db size
         begin_size = len(self.db)
 
-        # 3. for loop each line
-        for line in lines:
+        # 2. for loop each line
+        for line in data:
             # 3.1 split by ','
             row = line.split(',')
-            if 4 != len(row):
+            if 4 > len(row):
                 print("[error]input string data is not in correct format: %s", line)
                 continue
 

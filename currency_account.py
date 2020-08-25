@@ -31,6 +31,9 @@ class CurrencyAccount:
         return self.orders.pop()
 
     def PeekOrder(self) -> OpParam:
+        if len(self.orders) == 0:
+            return empty_op
+
         return self.orders[-1]
 
     def HasOrders(self) -> bool:

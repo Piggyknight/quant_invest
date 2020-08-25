@@ -31,7 +31,7 @@ class AiTrading:
     """
     def __init__(self, currency_conf: CurrencyConf, account: CurrencyAccount) -> None:
         # 1. init basic info
-        self.last_data = List[CurrencyRow]
+        self.last_data = []
         self.data_num = 0
         self.has_bought = False
         self.history_list = []
@@ -42,7 +42,7 @@ class AiTrading:
         # 2. init condition trigger
         self.cond_stop_loss = CondStopLoss(currency_conf.stop_loss)
         self.cond_stop_profit = CondStopProfit(currency_conf.stop_profit)
-        self.cond_trading_time = CondTradingTime(currency_conf.buy_time)
+        self.cond_trading_time = CondTradingTime(currency_conf.buy_time, currency_conf.wait_duration)
 
     def Process(self, data: CurrencyRow) -> List[OpParam]:
         # 1. safe check
@@ -51,6 +51,7 @@ class AiTrading:
 
         # 2. add to the data
         self.last_data.append(data)
+        print("[ai]collect App data: id=%d, row=%s" % (len(self.last_data), data))
 
         # 3. check if data is enough
         cur_num = len(self.last_data)
@@ -59,31 +60,41 @@ class AiTrading:
             return empty_op
 
         # 4. check if has orders
+        print("[ai]Data number is enough, start trading...")
         decision = []
         is_trading_time = self.cond_trading_time.IsTrigger(data)
-        if self.account.HasOrders:
+        if self.account.HasOrders():
+            print("\t[ai]Account already has orders...")
             last_op = self.account.PeekOrder()
             is_last_sell_order = E_OP_TYPE.sell == last_op.op_type
             is_last_buy_order = E_OP_TYPE.buy == last_op.op_type
             is_hit_stop_loss = self.cond_stop_loss.IsTrigger(data)
             is_hit_stop_profit = self.cond_stop_profit.IsTrigger(data)
-            print("is_last_sell_order: %d, is_last_buy_order: %d" \
+            print("\t[ai]is_last_sell_order: %d, is_last_buy_order: %d" \
                   % (is_last_sell_order, is_last_buy_order))
-            print(" is_hit_loss: %d, is_hit_profit, %d, is_trading_time: %d"\
+            print("\t[ai]is_hit_loss: %d, is_hit_profit, %d, is_trading_time: %d"\
                   % (is_hit_stop_loss, is_hit_stop_profit, is_trading_time))
 
             # 4.1 make decision by all the param
+            deci_op = E_OP_TYPE.none
             if is_last_sell_order and is_hit_stop_loss:
-                decision.append(E_OP_TYPE.closeout_sell)
+                deci_op = E_OP_TYPE.closeout_sell
             elif is_last_buy_order and self.cond_stop_profit.IsTrigger(data):
-                decision.append(E_OP_TYPE.closeout_buy)
+                deci_op = E_OP_TYPE.closeout_buy
             elif is_last_buy_order and is_trading_time:
-                decision.append(E_OP_TYPE.closeout_buy)
+                deci_op = E_OP_TYPE.closeout_buy
             elif is_last_sell_order and is_trading_time:
-                decision.append(E_OP_TYPE.closeout_sell)
+                deci_op = E_OP_TYPE.closeout_sell
+
+            if E_OP_TYPE.none != deci_op:
+                print("\t[ai]Decision made: %s" % deci_op)
+                decision.append(deci_op)
+
 
         # 5 if trading time is reached, we need to decide buy or sell
+        print("[ai]Continue if reach trading Time...")
         if is_trading_time:
+            print("\t[ai]Trading Time, decide whether we need to buy or sell....")
             # 5.1. check if hit the bottom
             bottom = SearchBottom(self.last_data, cur_num, self.conf.bottom_search_range)
             below_idx = SearchBelow(self.last_data, cur_num, self.conf.bottom_duration, bottom)
@@ -100,18 +111,31 @@ class AiTrading:
 
             # 5.3 according to the result, decide what we need to do
             # 5.3.1 if both hit top & bottom, then we need decide which one is earlier
-            if is_hit_top and is_hit_bottom :
+            deci_op = E_OP_TYPE.none
+            if is_hit_top and is_hit_bottom:
                 if below_idx < above_idx:
-                    decision.append(E_OP_TYPE.sell)
+                    deci_op = E_OP_TYPE.sell
                 else:
-                    decision.append(E_OP_TYPE.buy)
-            elif is_hit_top:
-                decision.append(E_OP_TYPE.buy)
+                    deci_op = E_OP_TYPE.buy
             elif is_hit_bottom:
-                decision.append(E_OP_TYPE.sell)
+                deci_op = E_OP_TYPE.sell
+            else:
+                deci_op = E_OP_TYPE.buy
+
+            if E_OP_TYPE.none != deci_op:
+                print("\t[ai]Is Hit top: %d, Is Hit Bottom: %d, decision: %s..." % (is_hit_top, is_hit_bottom, deci_op))
+                # 5.3.2 after we made decision, we need to update the stop loss and profit threshold
+                self.cond_stop_profit.threshold = data.close - self.conf.stop_profit * 0.0001
+                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * 0.0001
+                decision.append(deci_op)
 
         # 6. according to the decision to create op_param
         op_param = []
+        if 0 == len(decision):
+            print("[ai]No decision...")
+            return op_param
+
+        print("[ai]Convert decision to OpParam...")
         for op_type in decision:
             single_op = self._gen_op(op_type, data)
             # avoid empty op

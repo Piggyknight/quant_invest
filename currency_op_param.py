@@ -17,7 +17,7 @@ class E_OP_TYPE(Enum):
     __repr__ = __str__
 
 
-_print_format = 'OpType:%s, price:%d, number:%d, money_type: %d'
+_print_format = 'OpType:%s, price:%d, amount:%d, src_monry: %d, target_money: %d'
 
 
 class OpParam:

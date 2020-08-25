@@ -45,6 +45,7 @@ class CurrencyConf:
         self.stop_profit = 0
         self.wait_duration = 0
         self.time_unit = E_TIME_UNIT.hour
+        self.trade_amount = 100
 
     def Load(self, file_path: str) -> None:
         # 1. check if file_path is exist
