@@ -43,7 +43,7 @@ class CurrencyDb:
         # 1. check if file is exist
         is_file_exist = os.path.exists(db_file)
         if not is_file_exist:
-            print("[market]: File not exist: %s" % db_file)
+            print("[error][market]: File not exist: %s" % db_file)
             return -1
 
         # 2. read csv file into CurrencyRow
@@ -56,17 +56,9 @@ class CurrencyDb:
                 if 0 == len(row):
                     continue
 
-                cr = CurrencyRow()
+                # 2.1 parse row data to currency row
+                cr = self._parse_data(row)
 
-                # 2.1 convert string to datetime struct
-                d_str = row[0]
-                cr.time = datetime.strptime(d_str, _data_format)
-
-                # 2.2 convert other string into float 
-                cr.open = float(row[1])
-                cr.high = float(row[2])
-                cr.low = float(row[3])
-                cr.close = float(row[4])
 
                 # 2.3 store into db
                 self.db.append(cr)
@@ -75,6 +67,45 @@ class CurrencyDb:
             print("[market]Finished loading file %s, %d rows added" % (db_file, end_size - begin_size))
 
         return 0
+
+    def LoadByString(self, data: str) -> int:
+        # 1. split data by '\n'
+        lines = data.split('\n')
+
+        # 2. record begin db size
+        begin_size = len(self.db)
+
+        # 3. for loop each line
+        for line in lines:
+            # 3.1 split by ','
+            row = line.split(',')
+            if 4 != len(row):
+                print("[error]input string data is not in correct format: %s", line)
+                continue
+
+            # 3.2 parse data and put into db
+            cr = self._parse_data(row)
+            self.db.append(cr)
+
+        # 4. record finished size for debug usage
+        end_size = len(self.db)
+        print("[market]Finished loading string, %d rows added" % (end_size - begin_size))
+        return 0
+
+    def _parse_data(self, row: List[str]) -> CurrencyRow:
+        # 1. new currency row
+        cr = CurrencyRow()
+
+        # 2.1 convert string to datetime struct
+        d_str = row[0]
+        cr.time = datetime.strptime(d_str, _data_format)
+
+        # 2.2 convert other string into float
+        cr.open = float(row[1])
+        cr.high = float(row[2])
+        cr.low = float(row[3])
+        cr.close = float(row[4])
+        return cr
 
     def Get(self, idx: int) -> CurrencyRow:
         if idx > len(self.db) or idx < 0:
