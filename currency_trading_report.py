@@ -2,6 +2,10 @@
 
 from currency_account import *
 
+'''
+ time | profit | money | total in csv
+ 
+'''
 
 def ExportTradingReport(account: CurrencyAccount) -> str:
     """

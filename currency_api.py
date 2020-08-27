@@ -1,34 +1,74 @@
 # -*- coding:utf-8 -*-
 
 import sys
+from currency_account import *
+from currency_exchange_rate import *
+from currency_db import *
+from currency_op_param import *
+from currency_op import *
+from currency_ai_trading import *
 
-'''
-    main enter of the programe
-    1. set up all the class and data
-    2. loop all market data according to the input setting
-    3. let ai_trading calculate result
-    4. put result into account
-    5. account generate profit or cost
-    6. after all data is processed by the ai trading then export the all the history
-     
-'''
+
+
 def main(argv):
-    #1. read excel data into the market
-
-
-    #2. init strategy / account
-
-    #3. according to the test duration, loop all the data
-        
-        #3.1 set data to the ai_trading to get the result op
-        #3.2 execute all the ops
-        #3.2 according to the account status decicde to continue or stop
-
-    #4.put all the history of account into exporter to generate report 
+    # 1. read excel data into the market
 
 
 
-    return;
+    # 2. init all the class
+    # 2.1 init currency conf
+    exchange_rate = CurrencyExchangeRate()
+    exchange_rate.Add(E_MONEY_TYPE.usd, E_MONEY_TYPE.eur, 1.18)
+
+    # 2.2 init exchange rate % accound
+    account = CurrencyAccount(exchange_rate)
+    account.AddMoney(E_MONEY_TYPE.usd, 100)
+
+    # 2.3 load db data
+    currency_db = CurrencyDb()
+    currency_db.Load(file_path)
+
+    # 2.4 init currency conf
+    cur_path = os.path.dirname(__file__)
+    conf_path = cur_path + '/conf/currency_conf.ini'
+    conf = CurrencyConf()
+    conf.Load(conf_path)
+
+    # 2.5 init all op
+    trading_info = TradingInfo()
+    trading_info.trading_fee = 0
+
+    op_sell = OpSell(account, trading_info)
+    op_buy = OpBuy(account, trading_info)
+    op_closeout_sell = OpCloseOutSell(account, trading_info)
+    op_closeout_buy = OpCloseOutBuy(account, trading_info)
+
+    # 2.6 loop get data from the currency_dab\
+    ai_trading = AiTrading(conf, account)
+
+    # 3. according to the test duration, loop all the data
+    for row in currency_db.db:
+        # 3.1. put into ai_trading to get op_commands
+        op_data = ai_trading.Process(row)
+        if op_data == empty_op:
+            continue
+
+        # 3.2 execute op and store result into account
+        for op in op_data:
+            if E_OP_TYPE.closeout_sell == op.op_type:
+                op_closeout_sell.Do(op)
+            elif E_OP_TYPE.closeout_buy == op.op_type:
+                op_closeout_buy.Do(op)
+            elif E_OP_TYPE.buy == op.op_type:
+                op_buy.Do(op)
+            elif E_OP_TYPE.sell == op.op_type:
+                op_sell.Do(op)
+
+
+    # 4. Finally, according to the account history, export the final report
+
+
+    return
     
 
 

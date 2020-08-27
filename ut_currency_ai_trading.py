@@ -7,9 +7,6 @@ from currency_op_param import *
 from currency_op import *
 from currency_ai_trading import *
 
-# 1. init currency conf
-exchange_rate = CurrencyExchangeRate()
-exchange_rate.Add(E_MONEY_TYPE.usd, E_MONEY_TYPE.eur, 1.18)
 
 # 2. init exchange rate % accound
 account = CurrencyAccount(exchange_rate)

@@ -125,8 +125,8 @@ class AiTrading:
             if E_OP_TYPE.none != deci_op:
                 print("\t[ai]Is Hit top: %d, Is Hit Bottom: %d, decision: %s..." % (is_hit_top, is_hit_bottom, deci_op))
                 # 5.3.2 after we made decision, we need to update the stop loss and profit threshold
-                self.cond_stop_profit.threshold = data.close - self.conf.stop_profit * 0.0001
-                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * 0.0001
+                self.cond_stop_profit.threshold = data.close + self.conf.stop_profit * 0.001
+                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * 0.001
                 decision.append(deci_op)
 
         # 6. according to the decision to create op_param

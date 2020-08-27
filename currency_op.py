@@ -47,7 +47,7 @@ class OpCloseOutSell:
         #    - buy cost = sell order's amount * curret price
         #    - profit = sell gain - buy cost
         sell_gain = order.amount * order.price
-        buy_cost = order.amount * op_param.price
+        buy_cost = op_param.amount * op_param.price
         cost = buy_cost * self.trading_info.trading_fee
         profit = sell_gain - buy_cost - cost
         print("[op]Clostout sell: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
