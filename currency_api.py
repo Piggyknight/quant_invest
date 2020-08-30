@@ -21,11 +21,11 @@ def main(argv):
     data_conf.Load(cur_path)
 
     # 2. according to the start & end time read excel data into the db
-    year_strs = data_conf.GetYearList()
+    year_list = data_conf.GetYearList()
     currency_db = CurrencyDb()
 
-    print("[main]Start Loading %d conf..." % len(year_strs))
-    for year in year_strs:
+    print("[main]Start Loading %d conf..." % len(year_list))
+    for year in year_list:
         excel_file = cur_path + '/data/year.csv'
         currency_db.Load(excel_file)
 
