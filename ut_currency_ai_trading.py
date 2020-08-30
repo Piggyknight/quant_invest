@@ -104,6 +104,7 @@ for row in currency_db.db:
         elif E_OP_TYPE.sell == op.op_type:
             op_sell.Do(op)
 
+
 # 5. assert all the result
 # should at least have 2 close out , 2 op(buy or sell)
 for op in account.op_history:

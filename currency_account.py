@@ -5,7 +5,6 @@ from currency_op_param import *
 class CurrencyAccount:
     def __init__(self, exchange_rate: CurrencyExchangeRate):
         # 1. init
-        self.op_history = []
         self.exchange_rate = exchange_rate
 
         # 2 ini all money type
@@ -18,10 +17,6 @@ class CurrencyAccount:
 
     def PushOrder(self, op_param: OpParam):
         self.orders.append(op_param)
-        self.op_history.append(op_param)
-
-    def PushHistory(self, op_param: OpParam):
-        self.op_history.append(op_param)
 
     def PopOrder(self)-> OpParam:
         # 1. avoid empty stack

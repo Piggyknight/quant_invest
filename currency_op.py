@@ -13,17 +13,11 @@ class OpSell:
         self.trading_info = trading_info
         return
 
-    def Do(self, op_param: OpParam):
+    def Do(self, op_param: OpParam) -> float:
         # 1. calculate trading cost
         cur_val = op_param.price * op_param.amount
         trading_fee = cur_val * self.trading_info.trading_fee
-
-        # 2. update the account money
-        self.account.AddMoney(op_param.src_money, -trading_fee)
-
-        # 3. push order into stack
-        self.account.PushOrder(op_param)
-        return
+        return -trading_fee
 
 
 class OpCloseOutSell:
@@ -31,7 +25,7 @@ class OpCloseOutSell:
         self.account = account
         self.trading_info = trading_info
 
-    def Do(self, op_param: OpParam):
+    def Do(self, op_param: OpParam) -> float:
         # 1. get corresponding sell order
         order = self.account.PopOrder()
         if order is None:
@@ -51,12 +45,7 @@ class OpCloseOutSell:
         cost = buy_cost * self.trading_info.trading_fee
         profit = sell_gain - buy_cost - cost
         print("[op]Clostout sell: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
-
-        # 3. update corresponding src money
-        self.account.AddMoney(op_param.src_money, profit)
-
-        # 4. push order into account history
-        self.account.PushHistory(op_param)
+        return profit
 
 
 class OpBuy:
@@ -64,17 +53,12 @@ class OpBuy:
         self.account = account
         self.trading_info = trading_info
 
-    def Do(self, op_param: OpParam):
+    def Do(self, op_param: OpParam) -> float:
         # 1. calculate trading cost
         cur_val = op_param.price * op_param.amount
         trading_fee = cur_val * self.trading_info.trading_fee
 
-        # 2. update the account money
-        self.account.AddMoney(op_param.src_money, -trading_fee)
-
-        # 3. push order into stack
-        self.account.PushOrder(op_param)
-        return
+        return -trading_fee
 
 
 class OpCloseOutBuy:
@@ -82,7 +66,7 @@ class OpCloseOutBuy:
         self.account = account
         self.trading_info = trading_info
 
-    def Do(self, op_param: OpParam):
+    def Do(self, op_param: OpParam) -> float:
         # 1. get corresponding buy order
         order = self.account.PopOrder()
         if order is None:
@@ -102,9 +86,4 @@ class OpCloseOutBuy:
         cost = sell_gain * self.trading_info.trading_fee
         profit = sell_gain - buy_cost - cost
         print("[op]Closeout buy: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
-
-        # 3. update corresponding src money
-        self.account.AddMoney(op_param.src_money, profit)
-
-        # 4. push order into account history
-        self.account.PushHistory(op_param)
+        return profit
