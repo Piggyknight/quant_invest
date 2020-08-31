@@ -18,7 +18,7 @@ def main(argv):
     cur_path = os.path.dirname(__file__)
     time_conf = cur_path + '/conf/currency_data.ini'
     data_conf = CurrencyConfApp()
-    data_conf.Load(cur_path)
+    data_conf.Load(time_conf)
 
     # 2. according to the start & end time read excel data into the db
     year_list = data_conf.GetYearList()
@@ -26,7 +26,7 @@ def main(argv):
 
     print("[main]Start Loading %d conf..." % len(year_list))
     for year in year_list:
-        excel_file = cur_path + '/data/year.csv'
+        excel_file = cur_path + '/data/%s.csv' % year
         currency_db.Load(excel_file)
 
     # 3 Init the exchange rate & account
@@ -57,12 +57,21 @@ def main(argv):
     # 7. according to the test duration, loop all the data
     print("[main]Start Analyze Data...")
     for row in currency_db.db:
-        # 7.1. put into ai_trading to get op_commands
+        # 7.1 check if row data is in the duration of the data_conf
+        is_after_start_time = row.time.year >= data_conf.start_time.year \
+                              and row.time.month >= data_conf.start_time.month
+        is_before_end_time = row.time.year < data_conf.end_time.year \
+                             or (row.time.year == data_conf.end_time.year and row.time.month <= data_conf.end_time.month)
+        is_in_duration = is_after_start_time and is_before_end_time
+        if not is_in_duration:
+            continue
+
+        # 7.2. put into ai_trading to get op_commands
         op_data = ai_trading.Process(row)
         if op_data == empty_op:
             continue
 
-        # 7.2 execute op and store result into account
+        # 7.3 execute op and store result into account
         money = 0
         for op in op_data:
             if E_OP_TYPE.closeout_sell == op.op_type:
@@ -82,7 +91,9 @@ def main(argv):
     op_history.end_money = account.Total(E_MONEY_TYPE.usd)
 
     # 4. Finally, according to the account history, export the final report
-    report_path = cur_path + "/report.csv"
+    start_time_str = "%d%d" % (data_conf.start_time.year, data_conf.start_time.month)
+    end_time_str = "%d%d" % (data_conf.end_time.year, data_conf.end_time.month)
+    report_path = cur_path + "/report/report_%s_%s.csv" % (start_time_str, end_time_str)
     print("[main]Start Export account report: %s ..." % report_path)
 
     report_lines = ExportTradingReport(op_history)

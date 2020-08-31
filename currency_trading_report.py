@@ -3,7 +3,7 @@
 from currency_op_history import *
 from currency_op_param import *
 
-_format = '%s,%d,%f,%f,%f\n'
+_format = '%s,%d,%.5f,%.5f,%.5f\n'
 
 
 def ExportTradingReport(history: CurrencyOpHistory) -> []:
@@ -29,7 +29,7 @@ def ExportTradingReport(history: CurrencyOpHistory) -> []:
 
         # 2.3 cal the left money, total profit
         total_profit += cur_day_profit
-        left_money = history.start_money - total_profit
+        left_money = history.start_money + total_profit
 
         # 2.4 generate the str
         day_str = '%d.%d.%d' % (cur_day.year, cur_day.month, cur_day.day)
@@ -37,7 +37,7 @@ def ExportTradingReport(history: CurrencyOpHistory) -> []:
 
         # 2.5 update cur_day & temp array
         cur_day = item.time
-        history_in_same_day = []
+        history_in_same_day = [item]
 
     return ret
 

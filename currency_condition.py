@@ -75,7 +75,23 @@ class CondTradingTime:
 
         # 3. check if data time is expire, then update the day
         if dt <= timedelta(seconds=0):
-            self.trading_time += timedelta(hours=self.wait_duration)
+            # 3.1 add wait duration
+            delta_time = timedelta(hours=self.wait_duration)
+            self.trading_time += delta_time
+
+            # 3.2 if weekday is saturday or sunday, then add unitl next day
+            while True:
+                weekday = self.trading_time.weekday()
+                if weekday != 5 and weekday != 6:
+                    break
+                self.trading_time += delta_time
+
+            # 3.3 skip chrismas & 1.1
+            if self.trading_time.month == 12 and self.trading_time.day == 25:
+                self.trading_time += delta_time
+            elif self.trading_time.month == 1 and self.trading_time.day == 1:
+                self.trading_time += delta_time
+
             print("[cond]Time reached, update trading_time: %s" % self.trading_time)
             return True
 

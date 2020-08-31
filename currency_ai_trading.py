@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from typing import List
 from currency_db_search import *
-from currency_conf import *
+from currency_conf_strategy import *
 from currency_op_param import *
 from currency_account import *
 from currency_condition import *
@@ -51,7 +51,7 @@ class AiTrading:
 
         # 2. add to the data
         self.last_data.append(data)
-        print("[ai]collect App data: id=%d, row=%s" % (len(self.last_data), data))
+        print("[ai]collect App data: count=%d, row=%s" % (len(self.last_data), data))
 
         # 3. check if data is enough
         cur_num = len(self.last_data)
@@ -60,8 +60,8 @@ class AiTrading:
             return empty_op
 
         # 4. check if has orders
-        print("[ai]Data number is enough, start trading...")
-        decision = []
+        # print("[ai]Data number is enough, start trading...")
+        out_param = []
         is_trading_time = self.cond_trading_time.IsTrigger(data)
         if self.account.HasOrders():
             print("\t[ai]Account already has orders...")
@@ -72,27 +72,36 @@ class AiTrading:
             is_hit_stop_profit = self.cond_stop_profit.IsTrigger(data)
             print("\t[ai]is_last_sell_order: %d, is_last_buy_order: %d" \
                   % (is_last_sell_order, is_last_buy_order))
-            print("\t[ai]is_hit_loss: %d, is_hit_profit, %d, is_trading_time: %d"\
+            print("\t[ai]is_hit_bottom: %d, is_hit_top, %d, is_trading_time: %d"\
                   % (is_hit_stop_loss, is_hit_stop_profit, is_trading_time))
 
             # 4.1 make decision by all the param
             deci_op = E_OP_TYPE.none
-            if is_last_sell_order and is_hit_stop_loss:
-                deci_op = E_OP_TYPE.closeout_sell
-            elif is_last_buy_order and self.cond_stop_profit.IsTrigger(data):
-                deci_op = E_OP_TYPE.closeout_buy
-            elif is_last_buy_order and is_trading_time:
-                deci_op = E_OP_TYPE.closeout_buy
-            elif is_last_sell_order and is_trading_time:
-                deci_op = E_OP_TYPE.closeout_sell
+            if is_hit_stop_profit or is_hit_stop_loss:
+                if is_last_buy_order:
+                    deci_op = E_OP_TYPE.closeout_buy
+                else:
+                    deci_op = E_OP_TYPE.closeout_sell
+            elif is_trading_time:
+                if is_last_buy_order:
+                    deci_op = E_OP_TYPE.closeout_buy
+                else:
+                    deci_op = E_OP_TYPE.closeout_sell
+
+            # 4.2 decide price
+            if is_hit_stop_profit:
+                price = self.cond_stop_profit.threshold
+            elif is_hit_stop_loss:
+                price = self.cond_stop_loss.threshold
+            else:
+                price = data.close
 
             if E_OP_TYPE.none != deci_op:
-                print("\t[ai]Decision made: %s" % deci_op)
-                decision.append(deci_op)
-
+                print("\t[ai]Decision made: %s, price=%.5f" % (deci_op, price))
+                out_param.append(self._gen_op(deci_op, price, data))
 
         # 5 if trading time is reached, we need to decide buy or sell
-        print("[ai]Continue if reach trading Time...")
+        # print("[ai]Continue if reach trading Time...")
         if is_trading_time:
             print("\t[ai]Trading Time, decide whether we need to buy or sell....")
             # 5.1. check if hit the bottom
@@ -123,31 +132,21 @@ class AiTrading:
                 deci_op = E_OP_TYPE.buy
 
             if E_OP_TYPE.none != deci_op:
-                print("\t[ai]Is Hit top: %d, Is Hit Bottom: %d, decision: %s..." % (is_hit_top, is_hit_bottom, deci_op))
+                print("\t[ai]Is Hit top: %d, Is Hit Bottom: %d, decision: %s, price: %.5f" % (is_hit_top, is_hit_bottom, deci_op, data.close))
                 # 5.3.2 after we made decision, we need to update the stop loss and profit threshold
-                self.cond_stop_profit.threshold = data.close + self.conf.stop_profit * 0.001
-                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * 0.001
-                decision.append(deci_op)
+                self.cond_stop_profit.threshold = data.close + self.conf.stop_profit * 0.00001
+                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * 0.00001
+                out_param.append(self._gen_op(deci_op, data.close, data))
 
         # 6. according to the decision to create op_param
-        op_param = []
-        if 0 == len(decision):
+        if 0 == len(out_param):
             print("[ai]No decision...")
-            return op_param
 
-        print("[ai]Convert decision to OpParam...")
-        for op_type in decision:
-            single_op = self._gen_op(op_type, data)
-            # avoid empty op
-            if single_op is empty_op:
-                continue
-            op_param.append(single_op)
+        return out_param
 
-        return op_param
-
-    def _gen_op(self, op_type: E_OP_TYPE, row_data: CurrencyRow) -> OpParam:
+    def _gen_op(self, op_type: E_OP_TYPE, price: float, row_data: CurrencyRow) -> OpParam:
         ret_param = OpParam()
         ret_param.op_type = op_type
-        ret_param.price = row_data.close
+        ret_param.price = price
         ret_param.amount = self.conf.trade_amount
         return ret_param

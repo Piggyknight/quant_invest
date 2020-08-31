@@ -11,11 +11,6 @@ class E_OP_TYPE(Enum):
     closeout_buy = 3
     closeout_sell = 4
 
-    def __str__(self):
-        return '{0}'.format(self.value)
-
-    __repr__ = __str__
-
 
 _print_format = 'OpType:%s, price:%d, amount:%d, src_monry: %d, target_money: %d'
 

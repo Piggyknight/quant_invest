@@ -49,7 +49,7 @@ def SearchBottom(db: List[CurrencyRow], start_idx: int, back_count: int) -> floa
     for i in range(begin_idx, start_idx):
         min_close = min(db[i].close, min_close)
 
-    print("[bottom]Find bottom price: %f" % min_close)
+    print("[bottom]Find bottom price: %.5f" % min_close)
     return min_close
 
 
@@ -82,7 +82,7 @@ def SearchTop(db: List[CurrencyRow], start_idx: int, back_count: int) -> float:
     for i in range(begin_idx, start_idx):
         ret = max(db[i].close, ret)
 
-    print("[top]Find Top price: %f" % ret)
+    print("[top]Find Top price: %.5f" % ret)
     return ret
 
 
@@ -120,7 +120,7 @@ def SearchBelow(db: List[CurrencyRow], start_idx: int, back_count: int, threshol
             break
 
     if -1 != idx:
-        print("[below]Find %d(%s) is below threshold %f, " % (idx, db[idx].time, threshold))
+        print("[below]Find idx=%d(%s) is below threshold %.5f, " % (idx, db[idx].time, threshold))
     return idx
 
 

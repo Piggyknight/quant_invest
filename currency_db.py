@@ -5,7 +5,7 @@ from datetime import datetime
 import csv
 import os
 
-_print_format = 'year:%d, month:%d, day:%d, time:%d, open:%.4f, high:%.4f, low:%.4f, close:%.4f'
+_print_format = 'year:%d, month:%d, day:%d, time:%d, open:%.5f, high:%.5f, low:%.5f, close:%.5f'
 _data_format = '%Y.%m.%d %H:%M'
 
 
@@ -50,7 +50,7 @@ class CurrencyDb:
         with open(db_file, 'r', encoding='utf-8-sig') as csv_file:
             reader = csv.reader(csv_file)
 
-            print("[market]Start analyze csv file: %s ....", csv_file)
+            print("[market]Start analyze csv file: %s ...." % csv_file)
             begin_size = len(self.db)
             for row in reader:
                 if 0 == len(row):
@@ -77,7 +77,7 @@ class CurrencyDb:
             # 3.1 split by ','
             row = line.split(',')
             if 4 > len(row):
-                print("[error]input string data is not in correct format: %s", line)
+                print("[error]input string data is not in correct format: %s" % line)
                 continue
 
             # 3.2 parse data and put into db
@@ -106,6 +106,6 @@ class CurrencyDb:
 
     def Get(self, idx: int) -> CurrencyRow:
         if idx > len(self.db) or idx < 0:
-            print("[market]idx(%d) out of range when getting data from CurrencyDb", idx)
+            print("[market]idx(%d) out of range when getting data from CurrencyDb" % idx)
         return self.db[idx]
 

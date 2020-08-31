@@ -16,7 +16,7 @@ class CurrencyOpHistory:
     def __init__(self, start_money: float):
         self.start_money = start_money
         self.end_money = 0
-        self.history = List[HistoryItem]
+        self.history = []
 
     def AddHistory(self,  time: datetime, op_param: OpParam, money: float):
         self.history.append(HistoryItem(time, op_param, money))
