@@ -39,7 +39,7 @@ class CurrencyConfApp:
 
     def GetYearList(self) -> []:
         ret = [self.start_time.year]
-        if self.start_time.year != self.end_time:
+        if self.start_time.year != self.end_time.year:
             ret.append(self.end_time.year)
         return ret
 
