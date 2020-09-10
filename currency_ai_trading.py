@@ -29,7 +29,11 @@ class AiTrading:
     		- 每次交易平均点差
 
     """
-    def __init__(self, currency_conf: CurrencyConf, account: CurrencyAccount) -> None:
+    def __init__(self
+                 , currency_conf: CurrencyConf
+                 , account: CurrencyAccount
+                 , src_money: E_MONEY_TYPE
+                 , target_money: E_MONEY_TYPE) -> None:
         # 1. init basic info
         self.last_data = []
         self.data_num = 0
@@ -38,6 +42,8 @@ class AiTrading:
         self.buy_time = None
         self.conf = currency_conf
         self.account = account
+        self.src_money = src_money
+        self.target_money = target_money
 
         # 2. init condition trigger
         self.cond_stop_loss = CondStopLoss(currency_conf.stop_loss)
@@ -144,9 +150,14 @@ class AiTrading:
 
         return out_param
 
-    def _gen_op(self, op_type: E_OP_TYPE, price: float, row_data: CurrencyRow) -> OpParam:
+    def _gen_op(self
+                , op_type: E_OP_TYPE
+                , price: float
+                , row_data: CurrencyRow) -> OpParam:
         ret_param = OpParam()
         ret_param.op_type = op_type
         ret_param.price = price
         ret_param.amount = self.conf.trade_amount
+        ret_param.src_money = self.src_money
+        ret_param.target_money = self.target_money
         return ret_param

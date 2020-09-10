@@ -21,7 +21,7 @@ class OpParam:
         self.price = 0
         self.amount = 0
         self.src_money = E_MONEY_TYPE.usd
-        self.target_money = E_MONEY_TYPE.eur
+        self.target_money = E_MONEY_TYPE.usd
 
     def __str__(self):
         return _print_format % (self.op_type,
