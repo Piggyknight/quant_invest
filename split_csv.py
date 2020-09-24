@@ -8,6 +8,7 @@ _encoding_str = 'utf-16-le'
 _bom_head = '\ufeff'
 _data_format = '%Y.%m.%d %H:%M'
 
+
 def split_mt5_csv(file_path, op_folder):
     db = {}
 
@@ -34,14 +35,21 @@ def split_mt5_csv(file_path, op_folder):
             
             db[time.year].append(row)
 
-    # 2.1 first make sure folder is exist
+
+    # 2. analyze currency type & time type
+    file_names = os.path.basename(file_path).split('.')
+    money_type = file_names[0][0:6]
+    time_type = file_names[0][6:]
+    print("Split file_name=%s, money_type=%s, time_type=%s" % (file_names[0], money_type, time_type))
+
+    # 3 first make sure folder is exist
     is_folder_exist = os.path.exists(op_folder)
     if not is_folder_exist:
         os.makedirs(op_folder)
 
-    # 2.2 ouput each years' file
+    # 4. ouput each years' file
     for key, value in db.items():
-        report_file_path = (op_folder + "%d.csv" ) % key
+        report_file_path = (op_folder + "%d_%s_%s.csv" ) % (key, money_type, time_type)
         with open(report_file_path, "w", encoding='utf-8') as op_csv_file:
             writer = csv.writer(op_csv_file)
             for row in value:

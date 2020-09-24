@@ -59,7 +59,6 @@ class CurrencyDb:
                 # 2.1 parse row data to currency row
                 cr = self._parse_data(row)
 
-
                 # 2.3 store into db
                 self.db.append(cr)
 

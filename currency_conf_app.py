@@ -12,8 +12,9 @@ class CurrencyConfApp:
         Read currency_data.ini, output start & end time info
     """
     def __init__(self):
-        self.start_time = 0
-        self.end_time = 0
+        self.start_time = datetime.now()
+        self.end_time = datetime.now()
+        self.money_grp = ""
         self.start_money = 0
 
     def Load(self, file_path: str) -> None:
@@ -34,12 +35,17 @@ class CurrencyConfApp:
         self.start_time = datetime.strptime(basic['start_time'], _data_format)
         self.end_time = datetime.strptime(basic['end_time'], _data_format)
         self.start_money = int(basic['start_money'])
+        self.money_grp = basic['money_grp']
 
         return
 
     def GetYearList(self) -> []:
         ret = [self.start_time.year]
         if self.start_time.year != self.end_time.year:
+            year = self.start_time.year
+            while year < self.end_time.year:
+                year += 1
+                ret.append(year)
             ret.append(self.end_time.year)
         return ret
 

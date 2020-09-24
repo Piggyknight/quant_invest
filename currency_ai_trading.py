@@ -29,7 +29,13 @@ class AiTrading:
     		- 每次交易平均点差
 
     """
-    def __init__(self, currency_conf: CurrencyConf, account: CurrencyAccount) -> None:
+    def __init__(self
+                 , currency_conf: CurrencyConf
+                 , account: CurrencyAccount
+                 , src_money: E_MONEY_TYPE
+                 , target_money: E_MONEY_TYPE
+                 , point_factor: float) -> None:
+
         # 1. init basic info
         self.last_data = []
         self.data_num = 0
@@ -38,6 +44,9 @@ class AiTrading:
         self.buy_time = None
         self.conf = currency_conf
         self.account = account
+        self.src_money = src_money
+        self.target_money = target_money
+        self.point_factor = point_factor
 
         # 2. init condition trigger
         self.cond_stop_loss = CondStopLoss(currency_conf.stop_loss)
@@ -134,8 +143,8 @@ class AiTrading:
             if E_OP_TYPE.none != deci_op:
                 print("\t[ai]Is Hit top: %d, Is Hit Bottom: %d, decision: %s, price: %.5f" % (is_hit_top, is_hit_bottom, deci_op, data.close))
                 # 5.3.2 after we made decision, we need to update the stop loss and profit threshold
-                self.cond_stop_profit.threshold = data.close + self.conf.stop_profit * 0.0001
-                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * 0.0001
+                self.cond_stop_profit.threshold = data.close + self.conf.stop_profit * self.point_factor
+                self.cond_stop_loss.threshold = data.close - self.conf.stop_loss * self.point_factor
                 out_param.append(self._gen_op(deci_op, data.close, data))
 
         # 6. according to the decision to create op_param
@@ -144,9 +153,14 @@ class AiTrading:
 
         return out_param
 
-    def _gen_op(self, op_type: E_OP_TYPE, price: float, row_data: CurrencyRow) -> OpParam:
+    def _gen_op(self
+                , op_type: E_OP_TYPE
+                , price: float
+                , row_data: CurrencyRow) -> OpParam:
         ret_param = OpParam()
         ret_param.op_type = op_type
         ret_param.price = price
         ret_param.amount = self.conf.trade_amount
+        ret_param.src_money = self.src_money
+        ret_param.target_money = self.target_money
         return ret_param
