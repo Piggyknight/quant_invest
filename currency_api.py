@@ -11,6 +11,7 @@ from currency_conf_app import *
 from currency_conf_strategy import *
 from currency_op_history import *
 from currency_trading_report import *
+from currency_money_grp import *
 
 
 def main(argv):
@@ -20,19 +21,25 @@ def main(argv):
     data_conf = CurrencyConfApp()
     data_conf.Load(time_conf)
 
+    # 1.2 get money grp str to generate following data
+    #    - src money, target money, point factor
+    money_grp = data_conf.money_grp
+    src_money = GetSrcMoney(money_grp)
+    target_money = GetTargetMoney(money_grp)
+    point_factor = GetPointFactor(money_grp)
+
     # 2. according to the start & end time read excel data into the db
     year_list = data_conf.GetYearList()
     currency_db = CurrencyDb()
 
     print("[main]Start Loading %d conf..." % len(year_list))
     for year in year_list:
-        excel_file = cur_path + '/data/%s_%s_H1.csv' % (year, data_conf.money_grp)
+        excel_file = cur_path + '/data/%s_%s.csv' % (year, money_grp)
         currency_db.Load(excel_file)
 
     # 3 Init the exchange rate & account
     exchange_rate = CurrencyExchangeRate()
     exchange_rate.Add(E_MONEY_TYPE.usd, E_MONEY_TYPE.eur, 1.18)
-    exchange_rate.Add(E_MONEY_TYPE.usd, E_MONEY_TYPE.yan, 106.18)
 
     account = CurrencyAccount(exchange_rate)
     account.AddMoney(E_MONEY_TYPE.usd, data_conf.start_money)
@@ -52,7 +59,7 @@ def main(argv):
     op_closeout_buy = OpCloseOutBuy(account, trading_info)
 
     # 6 loop get data from the currency_dab\
-    ai_trading = AiTrading(conf, account, data_conf.src_money, data_conf.target_money)
+    ai_trading = AiTrading(conf, account, src_money, target_money, point_factor)
     op_history = CurrencyOpHistory(data_conf.start_money)
 
     # 7. according to the test duration, loop all the data
