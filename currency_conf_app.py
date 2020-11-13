@@ -2,6 +2,7 @@
 
 import os.path
 import configparser
+from currency_exchange_rate import *
 from datetime import datetime
 
 _data_format = '%Y.%m'
@@ -16,6 +17,8 @@ class CurrencyConfApp:
         self.end_time = datetime.now()
         self.money_grp = ""
         self.start_money = 0
+        self.src_money = E_MONEY_TYPE.usd
+        self.target_money = E_MONEY_TYPE.usd
 
     def Load(self, file_path: str) -> None:
         # 1. check if file_path is exist
@@ -35,7 +38,14 @@ class CurrencyConfApp:
         self.start_time = datetime.strptime(basic['start_time'], _data_format)
         self.end_time = datetime.strptime(basic['end_time'], _data_format)
         self.start_money = int(basic['start_money'])
-        self.money_grp = basic['money_grp']
+        self.money_grp = basic['money_grp'].upper()
+
+        if self.money_grp == "EURUSD":
+            self.target_money = E_MONEY_TYPE.eur
+            self.src_money = E_MONEY_TYPE.usd
+        elif self.money_grp == "USDYAN":
+            self.target_money = E_MONEY_TYPE.usd
+            self.src_money = E_MONEY_TYPE.yan
 
         return
 

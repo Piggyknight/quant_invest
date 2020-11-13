@@ -26,12 +26,13 @@ def main(argv):
 
     print("[main]Start Loading %d conf..." % len(year_list))
     for year in year_list:
-        excel_file = cur_path + '/data/%s.csv' % year
+        excel_file = cur_path + '/data/%s_%s_H1.csv' % (year, data_conf.money_grp)
         currency_db.Load(excel_file)
 
     # 3 Init the exchange rate & account
     exchange_rate = CurrencyExchangeRate()
     exchange_rate.Add(E_MONEY_TYPE.usd, E_MONEY_TYPE.eur, 1.18)
+    exchange_rate.Add(E_MONEY_TYPE.usd, E_MONEY_TYPE.yan, 106.18)
 
     account = CurrencyAccount(exchange_rate)
     account.AddMoney(E_MONEY_TYPE.usd, data_conf.start_money)
@@ -51,7 +52,7 @@ def main(argv):
     op_closeout_buy = OpCloseOutBuy(account, trading_info)
 
     # 6 loop get data from the currency_dab\
-    ai_trading = AiTrading(conf, account)
+    ai_trading = AiTrading(conf, account, data_conf.src_money, data_conf.target_money)
     op_history = CurrencyOpHistory(data_conf.start_money)
 
     # 7. according to the test duration, loop all the data
