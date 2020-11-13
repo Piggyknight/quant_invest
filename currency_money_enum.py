@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from enum import IntEnum
+from enum import *
 
 
 class E_MONEY_TYPE(IntEnum):
@@ -66,4 +66,3 @@ class CurrencyExchangeRate:
 
         # 4. output rate if exist
         return self.rate_db[key]
-

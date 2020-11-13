@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from currency_exchange_rate import *
+from currency_money_enum import *
 
 print("[ut]Start Testing CurrencyExchangeRate", end="...")
 currency_rate = CurrencyExchangeRate()

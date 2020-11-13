@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from currency_account import *
-from currency_exchange_rate import *
+from currency_money_enum import *
 
 print("[ut]Start testing CurrencyAccount...")
 # 1. init the exchange rate

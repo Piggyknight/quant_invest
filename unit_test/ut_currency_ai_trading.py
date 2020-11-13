@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from currency_account import *
-from currency_exchange_rate import *
+from currency_money_enum import *
 from currency_db import *
 from currency_op_param import *
 from currency_op import *

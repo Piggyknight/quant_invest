@@ -2,7 +2,7 @@
 
 import os.path
 import configparser
-from currency_exchange_rate import *
+from currency_money_enum import *
 from datetime import datetime
 
 _data_format = '%Y.%m'

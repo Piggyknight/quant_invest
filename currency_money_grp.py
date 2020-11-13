@@ -1,36 +1,45 @@
 # -*- coding:utf-8 -*-
+from currency_money_enum import *
 
-from enum import Enum
 
 class E_MONEY_GRP(Enum):
-    eur_usd = "eurusd"
-    usd_jpy = "jpyusd"
-    gold = "gold"
-
-
-_money_grp = { \
-              E_MONEY_GRP.eur_usd: E_MONEY_GRP.eur_usd, \
-              E_MONEY_GRP.gold: E_MONEY_GRP.gold}
-
-_src_money = {E_MONEY_GRP.eur_usd: E_MONEY_TYPE.usd, \
-              E_MONEY_GRP.gold: E_MONEY_TYPE.usd}
-
-_target_money ={ E_MONEY_GRP.eur_usd : E_MONEY_TYPE.eur, \
-                 E_MONEY_GRP.gold: E_MONEY_TYPE.gold}
-
-_point_factor = { E_MONEY_GRP.eur_usd: 0.00001, \
-                  E_MONEY_GRP.gold: 0.1 \ 
-                  E_MONEY_GRP.usd_jpy: 0.001}
+    none = 0
+    eur_usd = 1
+    usd_jpy = 2
+    gold = 3
 
 
 def GetMoneyGrp(grp_str: str) -> E_MONEY_GRP:
-    return _money_grp[grp_str]
+    if "eurusd" == grp_str :
+        return E_MONEY_GRP.eur_usd
+    elif "jpyusd" == grp_str:
+        return E_MONEY_GRP.usd_jpy
+    elif "gold" == grp_str:
+        return E_MONEY_GRP.gold
 
-def GetSrcMoney(grp_str: str) -> E_MONEY_TYPE:
-   return _src_money[grp_str]
 
-def GetTargetMoney(grp_str: str) -> E_MONEY_TYPE:
-    return _target_money[grp_str]
+def GetSrcMoney(grp: E_MONEY_GRP) -> E_MONEY_TYPE:
+    if grp == E_MONEY_GRP.eur_usd:
+        return E_MONEY_TYPE.usd
+    elif grp == E_MONEY_GRP.usd_jpy:
+        return E_MONEY_TYPE.jpy
+    elif grp == E_MONEY_GRP.gold:
+        return E_MONEY_TYPE.usd
 
-def GetPointFactor(grp_str: str)-> float:
-    return _money_grp[grp_str]
+
+def GetTargetMoney(grp: E_MONEY_GRP) -> E_MONEY_TYPE:
+    if grp == E_MONEY_GRP.eur_usd:
+        return E_MONEY_TYPE.eur
+    elif grp == E_MONEY_GRP.usd_jpy:
+        return E_MONEY_TYPE.usd
+    elif grp == E_MONEY_GRP.gold:
+        return E_MONEY_TYPE.gold
+
+
+def GetPointFactor(grp: E_MONEY_GRP)-> float:
+    if grp == E_MONEY_GRP.eur_usd:
+        return 0.00001
+    elif grp == E_MONEY_GRP.usd_jpy:
+        return 0.001
+    elif grp == E_MONEY_GRP.gold:
+        return 0.1

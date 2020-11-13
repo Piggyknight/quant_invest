@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from enum import Enum
-from currency_exchange_rate import *
+from currency_money_enum import *
 
 
 class E_OP_TYPE(Enum):

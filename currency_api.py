@@ -2,7 +2,7 @@
 
 import sys
 from currency_account import *
-from currency_exchange_rate import *
+from currency_money_enum import *
 from currency_db import *
 from currency_op_param import *
 from currency_op import *
@@ -34,7 +34,7 @@ def main(argv):
 
     print("[main]Start Loading %d conf..." % len(year_list))
     for year in year_list:
-        excel_file = cur_path + '/data/%s_%s.csv' % (year, money_grp)
+        excel_file = cur_path + '/data/%s_%s_H1.csv' % (year, money_grp)
         currency_db.Load(excel_file)
 
     # 3 Init the exchange rate & account
