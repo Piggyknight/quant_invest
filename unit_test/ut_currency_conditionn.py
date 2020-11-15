@@ -21,7 +21,7 @@ row2.high = 1.1
 row2.low = 1.1
 row2.close = 1.1
 
-stop_loss = CondStopLoss(1.2)
+stop_loss = CondStopBelow(1.2)
 assert False == stop_loss.IsTrigger(row1), "Test bigger than threshold failed"
 assert True == stop_loss.IsTrigger(row2), "Test less then threshold failed"
 assert False == stop_loss.IsTrigger(2), "Test wrong input failed"
@@ -33,7 +33,7 @@ print("[ut]Start test CondStopProfit....")
 #   - test safe check
 #   - high is bigger then threshold
 #   - all bigger then threshold
-stop_profit = CondStopProfit(1.16)
+stop_profit = CondStopAbove(1.16)
 assert False == stop_profit.IsTrigger(row2), "Test less than threshold failed"
 assert True == stop_profit.IsTrigger(row1), "Test bigger then threshold failed"
 assert False == stop_profit.IsTrigger(2), "Test wrong input failed"

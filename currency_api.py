@@ -12,6 +12,7 @@ from currency_conf_strategy import *
 from currency_op_history import *
 from currency_trading_report import *
 from currency_money_grp import *
+from st_avg import *
 
 
 def main(argv):
@@ -23,18 +24,18 @@ def main(argv):
 
     # 1.2 get money grp str to generate following data
     #    - src money, target money, point factor
-    money_grp = data_conf.money_grp
+    money_grp = GetMoneyGrp(data_conf.money_grp)
     src_money = GetSrcMoney(money_grp)
     target_money = GetTargetMoney(money_grp)
     point_factor = GetPointFactor(money_grp)
-
+    print("src_money: %s, target_money: %s, point_factory: %.5f" %(src_money, target_money, point_factor))
     # 2. according to the start & end time read excel data into the db
     year_list = data_conf.GetYearList()
     currency_db = CurrencyDb()
 
     print("[main]Start Loading %d conf..." % len(year_list))
     for year in year_list:
-        excel_file = cur_path + '/data/%s_%s_H1.csv' % (year, money_grp)
+        excel_file = cur_path + '/data/%s_%s_H1.csv' % (year, data_conf.money_grp.upper())
         currency_db.Load(excel_file)
 
     # 3 Init the exchange rate & account
@@ -44,22 +45,18 @@ def main(argv):
     account = CurrencyAccount(exchange_rate)
     account.AddMoney(E_MONEY_TYPE.usd, data_conf.start_money)
 
-    # 4 init currency trading strategy conf
-    conf_path = cur_path + '/conf/currency_conf.ini'
-    conf = CurrencyConf()
-    conf.Load(conf_path)
-
-    # 5 init 4 operation
+    # 4 init 4 operation
     trading_info = TradingInfo()
     trading_info.trading_fee = 0
 
     op_sell = OpSell(account, trading_info)
     op_buy = OpBuy(account, trading_info)
-    op_closeout_sell = OpCloseOutSell(account, trading_info)
-    op_closeout_buy = OpCloseOutBuy(account, trading_info)
+    op_closeout_sell = OpCloseOutSell(account, trading_info, data_conf.lever)
+    op_closeout_buy = OpCloseOutBuy(account, trading_info, data_conf.lever)
 
-    # 6 loop get data from the currency_dab\
-    ai_trading = AiTrading(conf, account, src_money, target_money, point_factor)
+    # 5 loop get data from the currency_dab\
+    #ai_trading = AiTrading(conf, account, src_money, target_money, point_factor)
+    ai_trading = StAvg(account, src_money, target_money, point_factor)
     op_history = CurrencyOpHistory(data_conf.start_money)
 
     # 7. according to the test duration, loop all the data

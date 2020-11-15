@@ -49,8 +49,8 @@ class AiTrading:
         self.point_factor = point_factor
 
         # 2. init condition trigger
-        self.cond_stop_loss = CondStopLoss(currency_conf.stop_loss)
-        self.cond_stop_profit = CondStopProfit(currency_conf.stop_profit)
+        self.cond_stop_loss = CondStopBelow(currency_conf.stop_loss)
+        self.cond_stop_profit = CondStopAbove(currency_conf.stop_profit)
         self.cond_trading_time = CondTradingTime(currency_conf.buy_time, currency_conf.wait_duration)
 
     def Process(self, data: CurrencyRow) -> List[OpParam]:

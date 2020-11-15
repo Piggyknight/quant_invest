@@ -4,7 +4,7 @@ from datetime import datetime,timedelta
 from currency_db import *
 import copy
 
-class CondStopLoss:
+class CondStopBelow:
     """
        Check if high, open, low, close in CurencyRow is below threshold
     """
@@ -26,7 +26,7 @@ class CondStopLoss:
         return False
 
 
-class CondStopProfit:
+class CondStopAbove:
     """
        Check if high, open, low, close in CurencyRow is above threshold
     """
@@ -48,9 +48,9 @@ class CondStopProfit:
         return False
 
 
-class CondTradingTime:
+class CondBuyTime:
     """
-       - Check if time in CurrencyRow is expire,
+       - Check if buy time is reached
        - midnight should be 24 not zeor
     """
     def __init__(self, expire_hour: int, wait_duration: int):
@@ -97,3 +97,33 @@ class CondTradingTime:
 
         return False
 
+
+class CondDuration:
+    """
+       - Check if duration is reached
+       - start time is updated by out sider
+    """
+    def __init__(self, wait_duration: int):
+        self.wait_duration = wait_duration
+        self.trading_time = None
+
+    def IsTrigger(self, data: CurrencyRow) -> bool:
+        # 1. safe check
+        if not isinstance(data, CurrencyRow):
+            return False
+
+        # 2 if everything is ok, then we check the time if it reached the buy time
+        # 2.1 init the buy time
+        if self.trading_time is None:
+            return False
+
+        # 2.2 calculate the timedelta
+        dt = data.time - self.trading_time
+
+        # 3. check if data time is expire, then update the day
+        delta_time = timedelta(hours=self.wait_duration)
+
+        if dt >= delta_time:
+            return True
+
+        return False

@@ -19,6 +19,7 @@ class CurrencyConfApp:
         self.start_money = 0
         self.src_money = E_MONEY_TYPE.usd
         self.target_money = E_MONEY_TYPE.usd
+        self.lever = 0
 
     def Load(self, file_path: str) -> None:
         # 1. check if file_path is exist
@@ -38,12 +39,13 @@ class CurrencyConfApp:
         self.start_time = datetime.strptime(basic['start_time'], _data_format)
         self.end_time = datetime.strptime(basic['end_time'], _data_format)
         self.start_money = int(basic['start_money'])
-        self.money_grp = basic['money_grp'].upper()
+        self.money_grp = basic['money_grp'].lower()
+        self.lever = int(basic["lever"])
 
-        if self.money_grp == "EURUSD":
+        if self.money_grp == "eurusd":
             self.target_money = E_MONEY_TYPE.eur
             self.src_money = E_MONEY_TYPE.usd
-        elif self.money_grp == "USDYAN":
+        elif self.money_grp == "usdjpy":
             self.target_money = E_MONEY_TYPE.usd
             self.src_money = E_MONEY_TYPE.yan
 

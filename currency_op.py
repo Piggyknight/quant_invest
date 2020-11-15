@@ -21,9 +21,10 @@ class OpSell:
 
 
 class OpCloseOutSell:
-    def __init__(self, account: CurrencyAccount,trading_info: TradingInfo):
+    def __init__(self, account: CurrencyAccount,trading_info: TradingInfo, lever: int):
         self.account = account
         self.trading_info = trading_info
+        self.lever = lever
 
     def Do(self, op_param: OpParam) -> float:
         # 1. get corresponding sell order
@@ -41,9 +42,9 @@ class OpCloseOutSell:
         #    - buy cost = sell order's amount * curret price
         #    - profit = sell gain - buy cost
         sell_gain = order.amount * order.price
-        buy_cost = op_param.amount * op_param.price
+        buy_cost = order.amount * op_param.price
         cost = buy_cost * self.trading_info.trading_fee
-        profit = sell_gain - buy_cost - cost
+        profit = (sell_gain - buy_cost - cost) * self.lever
         print("[op]Clostout sell: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
         return profit
 
@@ -62,9 +63,10 @@ class OpBuy:
 
 
 class OpCloseOutBuy:
-    def __init__(self, account: CurrencyAccount,trading_info: TradingInfo):
+    def __init__(self, account: CurrencyAccount,trading_info: TradingInfo, lever: int):
         self.account = account
         self.trading_info = trading_info
+        self.lever = lever
 
     def Do(self, op_param: OpParam) -> float:
         # 1. get corresponding buy order
@@ -84,6 +86,6 @@ class OpCloseOutBuy:
         buy_cost = order.amount * order.price
         sell_gain = order.amount * op_param.price
         cost = sell_gain * self.trading_info.trading_fee
-        profit = sell_gain - buy_cost - cost
+        profit = (sell_gain - buy_cost - cost) * self.lever
         print("[op]Closeout buy: sell_gain=%f, buy_cost=%f, profit=%f" % (sell_gain, buy_cost, profit))
         return profit
